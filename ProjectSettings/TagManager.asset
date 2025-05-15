@@ -4,10 +4,8 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - PlaneGenerator
-  - PlaneDestroyer
-  - Train
   - Coin
+  - OutOfBound
   layers:
   - Default
   - TransparentFX
@@ -16,7 +14,7 @@ TagManager:
   - Water
   - UI
   - Player
-  - 
+  - Ground
   - 
   - 
   - 
@@ -42,6 +40,12 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: BG
+    uniqueID: 1057294077
+    locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Player
+    uniqueID: 1875677893
     locked: 0

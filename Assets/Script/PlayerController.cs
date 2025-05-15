@@ -3,131 +3,95 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private Rigidbody playerRigidbody;
-    [SerializeField] private float moveSpeed;
-    [SerializeField] private float sideSpeed;
-
-    [SerializeField] private Transform leftLane; //0
-    [SerializeField] private Transform centerLane; //1
-    [SerializeField] private Transform rightLane; //2
-
-    [SerializeField] private int currentLane = 1;
-
-    private bool changeOnce = false;
     private bool isGameRunning = false;
+    [Header("Jump Settings")]
+    public float jumpForce = 7f;
+    public int maxJumps = 2;
+
+    [Header("Ground Check")]
+    public Transform groundCheck;
+    public float groundRadius = 0.2f;
+    public LayerMask groundLayer;
+
+    private Rigidbody2D rb;
+    private Animator anim;
+
+    private int jumpCount = 0;
+    private bool isGrounded;
 
     void Start()
     {
         isGameRunning = true;
-        currentLane = 1;
-        //ChangePlayerPositionOnLaneChange();
-
-        StartCoroutine(GameWin());
+        rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
     }
 
     void Update()
     {
-        ChangeLaneInLeft();
-        ChangeLaneInRight();
+        GroundCheck();
+        HandleInput();
+        UpdateAnimation();
     }
 
-    private void FixedUpdate()
+    void HandleInput()
     {
-        if (isGameRunning)
+        if (Input.GetKeyDown(KeyCode.Space))
         {
+            TryJump();
+        }
 
-            Move();
-            ChangePlayerPositionOnLaneChange();
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+        {
+            TryJump();
         }
     }
 
-    private void Move()
+    void TryJump()
     {
-        transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z + moveSpeed * Time.deltaTime);
-    }
-
-    private void ChangeLaneInLeft()
-    {
-        if(Input.GetKeyDown(KeyCode.LeftArrow))
+        if (jumpCount < maxJumps)
         {
-            if (currentLane == 1 && !changeOnce)
-            {
-                currentLane = 0;
-                changeOnce = true;
-            }
-            else if (currentLane == 2 && !changeOnce)
-            {
-                Debug.Log("change to lane 1");
-                currentLane = 1;
-                changeOnce = true;
-            }
-        }
-        StartCoroutine(ChangeLaneBool());
-    }
-
-    private void ChangeLaneInRight()
-    {
-        if (Input.GetKeyDown(KeyCode.RightArrow))
-        {
-            if (currentLane == 0 && !changeOnce)
-            {
-                currentLane = 1;
-                changeOnce = true;
-            }
-            if (currentLane == 1 && !changeOnce)
-            {
-                currentLane = 2;
-                changeOnce = true;
-            }
-        }
-        StartCoroutine(ChangeLaneBool());
-    }
-
-    private IEnumerator ChangeLaneBool()
-    {
-        yield return new WaitForSeconds(0.1f);
-        changeOnce = false;
-    }
-
-    private void ChangePlayerPositionOnLaneChange()
-    {
-        if (currentLane == 0)
-        {
-            transform.position = Vector3.Lerp(transform.position, new Vector3(leftLane.position.x, transform.position.y, transform.position.z), sideSpeed * Time.deltaTime);
-        }
-        else if(currentLane == 1)
-        {
-            transform.position = Vector3.Lerp(transform.position, new Vector3(centerLane.position.x, transform.position.y, transform.position.z), sideSpeed * Time.deltaTime);
-        }
-        else if(currentLane == 2)
-        {
-            transform.position = Vector3.Lerp(transform.position, new Vector3(rightLane.position.x, transform.position.y, transform.position.z), sideSpeed * Time.deltaTime);
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            jumpCount++;
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    void GroundCheck()
     {
-        if (other.CompareTag("Coin"))
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, groundLayer);
+
+        if (isGrounded)
+        {
+            jumpCount = 0;
+        }
+    }
+
+    void UpdateAnimation()
+    {
+        anim.SetBool("isJumping", !isGrounded);
+        anim.SetInteger("jumpCount", jumpCount);
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (groundCheck != null)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(groundCheck.position, groundRadius);
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.gameObject.GetComponent<EnemyController>() != null)
+        {
+            isGameRunning = false;
+        }
+
+        if(collision.gameObject.CompareTag("Coin"))
         {
             UIController.Instance.IncremententScore();
             UIController.Instance.UpdateScore();
-            Destroy(other.gameObject);
+            Destroy(collision.gameObject);
         }
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.collider.CompareTag("Train"))
-        {
-            Debug.Log("collided with train");
-            UIController.Instance.EnableGameLoseCanvas();
-        }
-    }
-
-    private IEnumerator GameWin()
-    {
-        yield return new WaitForSeconds(60);
-        UIController.Instance.EnableGameWinCanvas();
-        isGameRunning = false;
     }
 }
