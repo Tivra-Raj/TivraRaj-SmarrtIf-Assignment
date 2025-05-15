@@ -5,12 +5,14 @@ public class UIController : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI scoreText;
 
-    [SerializeField] private GameObject GameWinObject;
     [SerializeField] private GameObject GameLoseObject;
+    [SerializeField] private TextMeshProUGUI uiScoreText;
+    [SerializeField] private TextMeshProUGUI distanceText;
 
     public static UIController Instance { get; private set; }
 
     private int score;
+    private float distance;
     public int Score => score;
 
     private void Awake()
@@ -28,7 +30,6 @@ public class UIController : MonoBehaviour
     private void Start()
     {
         score = 0;
-        GameWinObject.SetActive(false);
         GameLoseObject.SetActive(false);
         UpdateScore();
     }
@@ -38,11 +39,13 @@ public class UIController : MonoBehaviour
     public void UpdateScore()
     {
         scoreText.SetText("Score = " + score);
+        uiScoreText.SetText("Score = " + score);
+        distanceText.SetText("Distance = " + distance);
     }
 
-    public void EnableGameWinCanvas()
+    public void UpdateDistance(float distance)
     {
-        GameWinObject.SetActive(true);
+        this.distance = distance;
     }
 
     public void EnableGameLoseCanvas()

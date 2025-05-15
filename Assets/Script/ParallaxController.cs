@@ -4,7 +4,7 @@ public class ParallaxController : MonoBehaviour
 {
     [SerializeField] Transform cam; //Main Camera
     Vector3 camStartPos;
-    float distance; 
+    public float distance; 
 
     GameObject[] backgrounds;
     Material[] mat;
@@ -56,6 +56,8 @@ public class ParallaxController : MonoBehaviour
 
     private void Update()
     {
+        if (!gameManager.IsGameRunning()) return;
+
         parallaxSpeed = gameManager.GameSpeed;
         distance += Time.deltaTime * parallaxSpeed;
 

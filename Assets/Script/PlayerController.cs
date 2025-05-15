@@ -1,9 +1,7 @@
-using System.Collections;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    private bool isGameRunning = false;
     [Header("Jump Settings")]
     public float jumpForce = 7f;
     public int maxJumps = 2;
@@ -19,11 +17,18 @@ public class PlayerController : MonoBehaviour
     private int jumpCount = 0;
     private bool isGrounded;
 
+    public PlayerHealth health;
+
+    [Header("Distance Tracking")]
+    public float distanceCovered = 0f;
+    private Vector3 startPosition;
+
     void Start()
     {
-        isGameRunning = true;
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+
+        startPosition = transform.position;
     }
 
     void Update()
@@ -31,6 +36,7 @@ public class PlayerController : MonoBehaviour
         GroundCheck();
         HandleInput();
         UpdateAnimation();
+        TrackDistance();
     }
 
     void HandleInput()
@@ -82,9 +88,9 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.gameObject.GetComponent<EnemyController>() != null)
+        if(collision.gameObject.CompareTag("Enemy"))
         {
-            isGameRunning = false;
+            health.TakeDamage(1);
         }
 
         if(collision.gameObject.CompareTag("Coin"))
@@ -93,5 +99,15 @@ public class PlayerController : MonoBehaviour
             UIController.Instance.UpdateScore();
             Destroy(collision.gameObject);
         }
+    }
+
+    void TrackDistance()
+    {
+        distanceCovered = transform.position.x - startPosition.x;
+    }
+
+    public float GetDistanceCovered()
+    {
+        return distanceCovered;
     }
 }

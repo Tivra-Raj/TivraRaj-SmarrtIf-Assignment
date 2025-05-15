@@ -17,14 +17,24 @@ public class Spawner : MonoBehaviour
     public float MinSpawnRate = 1f;
     public float MaxSpawnRate = 2f;
 
+    [Header("Coin Settings")]
+    [SerializeField] private GameObject coinPrefab;
+    [SerializeField] private float minCoinSpawnRate = 2f;
+    [SerializeField] private float maxCoinSpawnRate = 4f;
+
+    private GameManager gameManager;
+
     private void Start()
     {
+        gameManager = GameManager.Instance;
         InvokeSpawn();
+        InvokeCoinSpawn();
     }
 
     private void OnEnable()
-    {
+    { 
         InvokeSpawn();
+        InvokeCoinSpawn();
     }
 
     private void OnDisable()
@@ -34,6 +44,8 @@ public class Spawner : MonoBehaviour
 
     private void Spawn()
     {
+        if (!gameManager.IsGameRunning()) return;
+
         float spawnChance = Random.value;
 
         foreach(var obj in spawnObject)
@@ -41,7 +53,9 @@ public class Spawner : MonoBehaviour
             if(spawnChance < obj.spawnChance)
             {
                 GameObject obstacle = Instantiate(obj.ObjectPrefab);
-                obstacle.transform.position = transform.position;
+                Vector3 spawnPosition = obstacle.transform.position;
+                spawnPosition.x = transform.position.x;
+                obstacle.transform.position = spawnPosition;
                 break;
             }
 
@@ -51,8 +65,25 @@ public class Spawner : MonoBehaviour
         InvokeSpawn();
     }
 
+    private void SpawnCoin()
+    {
+        if (!gameManager.IsGameRunning()) return;
+
+        if (coinPrefab == null) return;
+
+        Vector3 coinPosition = transform.position;
+        Instantiate(coinPrefab, coinPosition, Quaternion.identity);
+
+        InvokeCoinSpawn();
+    }
+
     private void InvokeSpawn()
     {
         Invoke(nameof(Spawn), Random.Range(MinSpawnRate, MaxSpawnRate));
+    }
+
+    private void InvokeCoinSpawn()
+    {
+        Invoke(nameof(SpawnCoin), Random.Range(minCoinSpawnRate, maxCoinSpawnRate));
     }
 }

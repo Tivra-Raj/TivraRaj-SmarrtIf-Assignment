@@ -8,6 +8,8 @@ public class GameManager : MonoBehaviour
     public float GameSpeedIncrease = 0.1f;
     public float GameSpeed {  get; private set; }
 
+    public bool isGameRunning = false;
+
     private void Awake()
     {
         if (Instance == null)
@@ -26,6 +28,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         GameSpeed = InitialGameSpeed;
+        isGameRunning = true;
     }
 
     // Update is called once per frame
@@ -33,4 +36,6 @@ public class GameManager : MonoBehaviour
     {
         GameSpeed += GameSpeedIncrease * Time.deltaTime;
     }
+
+    public bool IsGameRunning() => isGameRunning;
 }

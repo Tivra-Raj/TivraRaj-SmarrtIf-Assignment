@@ -12,6 +12,8 @@ public class EnemyController : MonoBehaviour
 
     void Update()
     {
+        if (!gameManager.IsGameRunning()) return;
+
         transform.position += gameManager.GameSpeed * speedMultiplier * Time.deltaTime * Vector3.left;
     }
 
